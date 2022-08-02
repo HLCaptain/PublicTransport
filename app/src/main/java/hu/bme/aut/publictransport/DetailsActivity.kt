@@ -9,7 +9,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.*
@@ -35,8 +38,10 @@ class DetailsActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     DetailsScreen(
-                        ticketType = intent.getStringExtra(TicketType)
-                            ?: getString(R.string.bus_ticket)
+                        ticketType = intent.getIntExtra(
+                            TicketTypeKey,
+                            BusType
+                        )
                     )
                 }
             }
@@ -44,23 +49,32 @@ class DetailsActivity : ComponentActivity() {
     }
 
     companion object {
-        const val TicketType = "TICKET_TYPE"
+        const val TicketTypeKey = "TicketTypeKey"
 
-        const val BoatPrice = 2500L
+        const val BikeType = 1
+        const val BusType = 2
+        const val TrainType = 3
+        const val BoatType = 4
+
         const val BikePrice = 700L
         const val BusPrice = 1000L
         const val TrainPrice = 1500L
+        const val BoatPrice = 2500L
+
+        const val FullPriceType = 1
+        const val SeniorType = 2
+        const val StudentType = 3
 
         const val FullPriceMultiplier = 1f
-        const val SeniorPriceMultiplier = .1f
-        const val PublicServantPriceMultiplier = .5f
+        const val SeniorMultiplier = .1f
+        const val StudentMultiplier = .5f
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DetailsScreen(
-    ticketType: String = "Ticket Type"
+    ticketType: Int = DetailsActivity.BusType
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -71,7 +85,17 @@ fun DetailsScreen(
                 orientation = Orientation.Vertical
             )
     ) {
-        Text(text = ticketType)
+        DetailsActivity.apply {
+            val ticketTypeText = when (ticketType) {
+                BusType -> stringResource(R.string.bus_ticket)
+                BikeType -> stringResource(R.string.bike_ticket)
+                BoatType -> stringResource(R.string.boat_ticket)
+                TrainType -> stringResource(R.string.train_ticket)
+                else -> stringResource(R.string.unknown_ticket_type)
+            }
+            Text(text = ticketTypeText)
+        }
+
         Text(text = stringResource(R.string.start_date))
         val context = LocalContext.current
         var startDate by remember { mutableStateOf(Calendar.getInstance().time) }
@@ -96,31 +120,29 @@ fun DetailsScreen(
         )
         Text(text = stringResource(R.string.price_category))
 
-        stringResource(id = R.string.full_price)
-        var selected by remember { mutableStateOf(context.getString(R.string.full_price)) }
-//        val selected = remember { mutableStateOf<String?>(null) }
-        DetailsRadioGroup(
-            options = listOf(
-                stringResource(R.string.full_price),
-                stringResource(R.string.senior),
-                stringResource(R.string.public_servant)
-            ),
-            selected = selected,
-            onOptionSelectedChange = { selected = it }
-        )
-
+        var selected by remember { mutableStateOf(DetailsActivity.FullPriceType) }
         DetailsActivity.apply {
+            DetailsRadioGroup(
+                options = hashMapOf(
+                    FullPriceType to stringResource(R.string.full_price),
+                    SeniorType to stringResource(R.string.senior),
+                    StudentType to stringResource(R.string.student)
+                ),
+                selected = selected,
+                onOptionSelectedChange = { selected = it },
+            )
+
             val basePrice = when (ticketType) {
-                stringResource(R.string.bus_ticket) -> BusPrice
-                stringResource(R.string.bike_ticket) -> BikePrice
-                stringResource(R.string.train_ticket) -> TrainPrice
-                stringResource(R.string.boat_ticket) -> BoatPrice
+                BusType -> BusPrice
+                BikeType -> BikePrice
+                TrainType -> TrainPrice
+                BoatType -> BoatPrice
                 else -> maxOf(BusPrice, BikePrice, TrainPrice, BoatPrice)
             }
             val priceMultiplier = when (selected) {
-                stringResource(R.string.full_price) -> FullPriceMultiplier
-                stringResource(R.string.senior) -> SeniorPriceMultiplier
-                stringResource(R.string.public_servant) -> PublicServantPriceMultiplier
+                FullPriceType -> FullPriceMultiplier
+                SeniorType -> SeniorMultiplier
+                StudentType -> StudentMultiplier
                 else -> FullPriceMultiplier
             }
             val price = basePrice * priceMultiplier
@@ -135,16 +157,14 @@ fun DetailsScreen(
             onClick = {
                 val travelType = selected
                 val dateString = "$startDate - $endDate"
-
                 val intent = Intent(context, PassActivity::class.java)
                     .putExtra(PassActivity.TravelTypeKey, travelType)
                     .putExtra(PassActivity.DateKey, dateString)
                 context.startActivity(intent)
             },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = stringResource(id = R.string.purchase_pass))
+            Text(text = stringResource(R.string.purchase_pass))
         }
     }
 }
@@ -193,6 +213,20 @@ fun DatePickerButton(
     }) {
         Text(text = text)
     }
+}
+
+@Composable
+inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadioGroup(
+    options: HashMap<Option, String>,
+    selected: NullableOption,
+    crossinline onOptionSelectedChange: (Option) -> Unit = {},
+) {
+    DetailsRadioGroup(
+        options = options.keys.toList(),
+        selected = selected,
+        onOptionSelectedChange = onOptionSelectedChange,
+        optionToRadioButtonText = { options[it] ?: it.toString() }
+    )
 }
 
 @Composable

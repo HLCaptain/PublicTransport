@@ -14,7 +14,6 @@
     <string name="price_category">Price category</string>
     <string name="full_price">Full price</string>
     <string name="senior">Senior</string>
-    <string name="public_servant">Public servant</string>
     <string name="purchase_pass">Purchase pass</string>
     <string name="title_activity_pass">PassActivity</string>
     <string name="qr_code">QR code</string>
@@ -22,4 +21,6 @@
     <string name="boat">Boat</string>
     <string name="train_ticket">Train ticket</string>
     <string name="boat_ticket">Boat ticket</string>
+    <string name="student">Student</string>
+    <string name="unknown_ticket_type">Unknown ticket type</string>
 </resources>
