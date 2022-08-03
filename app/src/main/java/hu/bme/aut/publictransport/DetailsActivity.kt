@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import hu.bme.aut.publictransport.ui.theme.PublicTransportTheme
-import java.util.*
+import java.time.LocalDate
 
 class DetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +40,7 @@ class DetailsActivity : ComponentActivity() {
                     DetailsScreen(
                         ticketType = intent.getIntExtra(
                             TicketTypeKey,
-                            BusType
+                            UnknownType
                         )
                     )
                 }
@@ -51,6 +51,7 @@ class DetailsActivity : ComponentActivity() {
     companion object {
         const val TicketTypeKey = "TicketTypeKey"
 
+        const val UnknownType = 0
         const val BikeType = 1
         const val BusType = 2
         const val TrainType = 3
@@ -74,7 +75,7 @@ class DetailsActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun DetailsScreen(
-    ticketType: Int = DetailsActivity.BusType
+    ticketType: Int = DetailsActivity.UnknownType
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -98,23 +99,23 @@ fun DetailsScreen(
 
         Text(text = stringResource(R.string.start_date))
         val context = LocalContext.current
-        var startDate by remember { mutableStateOf(Calendar.getInstance().time) }
+        var startDate by remember { mutableStateOf(LocalDate.now()) }
         DatePickerButton(
             context = context,
             date = startDate,
             onDateChangedListener = { _: DatePicker, year, month, day ->
                 // Sometimes it is way easier to use deprecated stuff...
-                startDate = Date(year, month, day)
+                startDate = LocalDate.of(year, month, day)
             },
             text = startDate.toString()
         )
         Text(text = stringResource(R.string.end_date))
-        var endDate by remember { mutableStateOf(Calendar.getInstance().time) }
+        var endDate by remember { mutableStateOf(LocalDate.now()) }
         DatePickerButton(
             context = context,
             date = endDate,
             onDateChangedListener = { _: DatePicker, year, month, day ->
-                endDate = Date(year, month, day)
+                endDate = LocalDate.of(year, month, day)
             },
             text = endDate.toString()
         )
@@ -155,10 +156,9 @@ fun DetailsScreen(
 
         Button(
             onClick = {
-                val travelType = selected
                 val dateString = "$startDate - $endDate"
                 val intent = Intent(context, PassActivity::class.java)
-                    .putExtra(PassActivity.TravelTypeKey, travelType)
+                    .putExtra(PassActivity.TravelTypeKey, ticketType)
                     .putExtra(PassActivity.DateKey, dateString)
                 context.startActivity(intent)
             },
@@ -173,39 +173,14 @@ fun DetailsScreen(
 fun DatePickerButton(
     context: Context = LocalContext.current,
     text: String = "Pick a date",
-    date: Date = Calendar.getInstance().time,
-    onDateChangedListener: (DatePicker, Int, Int, Int) -> Unit = { _: DatePicker, pickedYear: Int, pickedMonth: Int, pickedDay: Int ->
-        date.time = Date(pickedYear, pickedMonth, pickedDay).time
-        // With desugaring
-//        date.value = Date.from(
-//            LocalDate.of(pickedYear, pickedMonth, pickedDay)
-//                .atStartOfDay(ZoneId.systemDefault())
-//                .toInstant()
-//        )
-    }
+    date: LocalDate = LocalDate.now(),
+    onDateChangedListener: (DatePicker, Int, Int, Int) -> Unit =
+        { _: DatePicker, _: Int, _: Int, _: Int -> }
 ) {
-    // Declaring integer values
-    // for year, month and day
-    val year: Int
-    val month: Int
-    val day: Int
-
-    // Initializing a Calendar
-    val calendar = Calendar.getInstance()
-
-    // Fetching current year, month and day
-    year = calendar.get(Calendar.YEAR)
-    month = calendar.get(Calendar.MONTH)
-    day = calendar.get(Calendar.DAY_OF_MONTH)
-
-    calendar.time = Date()
-
-    // Declaring DatePickerDialog and setting
-    // initial values as current values (present year, month and day)
     val datePickerDialog = DatePickerDialog(
         context,
         onDateChangedListener,
-        year, month, day
+        date.year, date.monthValue, date.dayOfMonth
     )
 
     Button(onClick = {

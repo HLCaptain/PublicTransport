@@ -30,10 +30,22 @@ class PassActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PassScreen(
-                        intent.getStringExtra(TravelTypeKey) ?: "",
-                        intent.getStringExtra(DateKey) ?: ""
-                    )
+                    DetailsActivity.apply {
+                        val travelType = when (intent.getIntExtra(
+                            TravelTypeKey,
+                            UnknownType
+                        )) {
+                            BusType -> getString(R.string.bus_pass)
+                            BikeType -> getString(R.string.bike_pass)
+                            BoatType -> getString(R.string.boat_pass)
+                            TrainType -> getString(R.string.train_pass)
+                            else -> getString(R.string.unknown_pass_type)
+                        }
+                        PassScreen(
+                            travelType,
+                            intent.getStringExtra(DateKey) ?: ""
+                        )
+                    }
                 }
             }
         }
@@ -48,8 +60,8 @@ class PassActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun PassScreen(
-    ticketType: String = "Type of the ticket",
-    ticketDate: String = "Start date - End date"
+    passType: String = "Type of pass",
+    passDate: String = "Start date - End date"
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -61,8 +73,8 @@ fun PassScreen(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = ticketType)
-        Text(text = ticketDate)
+        Text(text = passType)
+        Text(text = passDate)
         Image(
             painter = painterResource(id = R.drawable.qrcode),
             contentDescription = stringResource(R.string.qr_code)

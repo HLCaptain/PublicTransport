@@ -23,4 +23,9 @@
     <string name="boat_ticket">Boat ticket</string>
     <string name="student">Student</string>
     <string name="unknown_ticket_type">Unknown ticket type</string>
+    <string name="bus_pass">Bus pass</string>
+    <string name="bike_pass">Bike pass</string>
+    <string name="boat_pass">Boat pass</string>
+    <string name="train_pass">Train pass</string>
+    <string name="unknown_pass_type">Unknown pass type</string>
 </resources>
