@@ -5,12 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +34,7 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun LoginScreen() {
@@ -54,10 +51,16 @@ fun LoginScreen() {
             style = MaterialTheme.typography.titleMedium
         )
 
+        val context = LocalContext.current
         var email by remember { mutableStateOf("") }
-        BasicTextField(
+        var emailLabel by remember { mutableStateOf(context.getString(R.string.email_label)) }
+        TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                emailLabel = context.getString(R.string.email_label)
+            },
+            label = { Text(emailLabel) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email
@@ -65,25 +68,29 @@ fun LoginScreen() {
         )
 
         var password by remember { mutableStateOf("") }
-        BasicTextField(
+        var passwordLabel by remember { mutableStateOf(context.getString(R.string.password_label)) }
+        TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordLabel = context.getString(R.string.password_label)
+            },
+            label = { Text(passwordLabel) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password
             )
         )
 
-        val context = LocalContext.current
         Button(
             onClick = {
                 val emailEmpty = email.isEmpty()
                 if (emailEmpty) {
-                    email = context.getString(R.string.please_enter_your_email_address)
+                    emailLabel = context.getString(R.string.please_enter_your_email_address)
                 }
                 val passwordEmpty = password.isEmpty()
                 if (passwordEmpty) {
-                    password = context.getString(R.string.please_enter_your_password)
+                    passwordLabel = context.getString(R.string.please_enter_your_password)
                 }
                 if (!emailEmpty && !passwordEmpty) {
                     context.startActivity(

@@ -28,4 +28,8 @@
     <string name="boat_pass">Boat pass</string>
     <string name="train_pass">Train pass</string>
     <string name="unknown_pass_type">Unknown pass type</string>
+    <string name="start_date_end_date">Start date - End date</string>
+    <string name="select_date_range">Select date range</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
 </resources>
