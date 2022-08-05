@@ -9,10 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.*
@@ -24,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import hu.bme.aut.publictransport.ui.theme.PublicTransportTheme
 import java.time.LocalDate
 
@@ -80,11 +78,13 @@ fun DetailsScreen(
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
+            .padding(8.dp)
             .fillMaxSize()
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
-            )
+            ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         DetailsActivity.apply {
             val ticketTypeText = when (ticketType) {
@@ -94,10 +94,15 @@ fun DetailsScreen(
                 TrainType -> stringResource(R.string.train_ticket)
                 else -> stringResource(R.string.unknown_ticket_type)
             }
-            Text(text = ticketTypeText)
+            Text(
+                text = ticketTypeText,
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
-
-        Text(text = stringResource(R.string.start_date))
+        Text(
+            text = stringResource(R.string.start_date),
+            style = MaterialTheme.typography.labelLarge
+        )
         val context = LocalContext.current
         var startDate by remember { mutableStateOf(LocalDate.now()) }
         DatePickerButton(
@@ -109,7 +114,10 @@ fun DetailsScreen(
             },
             text = startDate.toString()
         )
-        Text(text = stringResource(R.string.end_date))
+        Text(
+            text = stringResource(R.string.end_date),
+            style = MaterialTheme.typography.labelLarge
+        )
         var endDate by remember { mutableStateOf(LocalDate.now()) }
         DatePickerButton(
             context = context,
@@ -119,8 +127,10 @@ fun DetailsScreen(
             },
             text = endDate.toString()
         )
-        Text(text = stringResource(R.string.price_category))
-
+        Text(
+            text = stringResource(R.string.price_category),
+            style = MaterialTheme.typography.labelLarge
+        )
         var selected by remember { mutableStateOf(DetailsActivity.FullPriceType) }
         DetailsActivity.apply {
             DetailsRadioGroup(
@@ -150,10 +160,10 @@ fun DetailsScreen(
             Text(
                 text = price.toString(),
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall
             )
         }
-
         Button(
             onClick = {
                 val dateString = "$startDate - $endDate"
@@ -220,15 +230,13 @@ inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadio
                         selected = (option == selected),
                         onClick = { onOptionSelectedChange(option) }
                     ),
-                verticalAlignment = CenterVertically
+                verticalAlignment = CenterVertically,
             ) {
                 RadioButton(
                     selected = (option == selected),
                     onClick = { onOptionSelectedChange(option) },
                 )
-                Text(
-                    text = optionToRadioButtonText(option),
-                )
+                Text(text = optionToRadioButtonText(option))
             }
         }
     }

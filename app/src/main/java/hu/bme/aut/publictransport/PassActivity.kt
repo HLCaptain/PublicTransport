@@ -6,8 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import hu.bme.aut.publictransport.ui.theme.PublicTransportTheme
 
 class PassActivity : ComponentActivity() {
@@ -66,14 +69,19 @@ fun PassScreen(
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
+            .padding(8.dp)
             .fillMaxSize()
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = passType)
+        Text(
+            text = passType,
+            style = MaterialTheme.typography.titleMedium
+        )
         Text(text = passDate)
         Image(
             painter = painterResource(id = R.drawable.qrcode),
