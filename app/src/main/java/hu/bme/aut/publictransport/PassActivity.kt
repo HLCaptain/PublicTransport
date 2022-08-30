@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,35 +27,29 @@ class PassActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PublicTransportTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    DetailsActivity.apply {
-                        val travelType = when (intent.getIntExtra(
-                            TravelTypeKey,
-                            UnknownType
-                        )) {
-                            BusType -> getString(R.string.bus_pass)
-                            BikeType -> getString(R.string.bike_pass)
-                            BoatType -> getString(R.string.boat_pass)
-                            TrainType -> getString(R.string.train_pass)
-                            else -> getString(R.string.unknown_pass_type)
-                        }
-                        PassScreen(
-                            travelType,
-                            intent.getStringExtra(DateKey) ?: ""
-                        )
+                DetailsActivity.apply {
+                    val travelType = when (intent.getIntExtra(
+                        TravelTypeKey,
+                        UnknownType
+                    )) {
+                        BusType -> getString(R.string.bus_pass)
+                        BikeType -> getString(R.string.bike_pass)
+                        BoatType -> getString(R.string.boat_pass)
+                        TrainType -> getString(R.string.train_pass)
+                        else -> getString(R.string.unknown_pass_type)
                     }
+                    PassScreen(
+                        travelType,
+                        intent.getStringExtra(DateKey) ?: ""
+                    )
                 }
             }
         }
     }
 
     companion object {
-        const val DateKey = "DateKey"
-        const val TravelTypeKey = "TravelTypeKey"
+        const val DateKey = "KEY_DATE"
+        const val TravelTypeKey = "KEY_TRAVEL_TYPE"
     }
 }
 

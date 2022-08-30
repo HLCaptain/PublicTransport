@@ -1,5 +1,6 @@
 package hu.bme.aut.publictransport
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,13 +29,7 @@ class ListActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PublicTransportTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    TypeOfTravelScreen()
-                }
+                TypeOfTravelScreen()
             }
         }
     }
@@ -51,12 +45,10 @@ fun TypeOfTravelScreen() {
     ) {
         IconButton(
             onClick = {
-                val intent = Intent(context, DetailsActivity::class.java)
-                    .putExtra(
-                        DetailsActivity.TicketTypeKey,
-                        DetailsActivity.BikeType
-                    )
-                context.startActivity(intent)
+                openTicketDetails(
+                    context = context,
+                    ticketType = DetailsActivity.BikeType
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -70,12 +62,10 @@ fun TypeOfTravelScreen() {
         }
         IconButton(
             onClick = {
-                val intent = Intent(context, DetailsActivity::class.java)
-                    .putExtra(
-                        DetailsActivity.TicketTypeKey,
-                        DetailsActivity.BusType
-                    )
-                context.startActivity(intent)
+                openTicketDetails(
+                    context = context,
+                    ticketType = DetailsActivity.BusType
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,12 +79,10 @@ fun TypeOfTravelScreen() {
         }
         IconButton(
             onClick = {
-                val intent = Intent(context, DetailsActivity::class.java)
-                    .putExtra(
-                        DetailsActivity.TicketTypeKey,
-                        DetailsActivity.TrainType
-                    )
-                context.startActivity(intent)
+                openTicketDetails(
+                    context = context,
+                    ticketType = DetailsActivity.TrainType
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,12 +96,10 @@ fun TypeOfTravelScreen() {
         }
         IconButton(
             onClick = {
-                val intent = Intent(context, DetailsActivity::class.java)
-                    .putExtra(
-                        DetailsActivity.TicketTypeKey,
-                        DetailsActivity.BoatType
-                    )
-                context.startActivity(intent)
+                openTicketDetails(
+                    context = context,
+                    ticketType = DetailsActivity.BoatType
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,6 +112,18 @@ fun TypeOfTravelScreen() {
             TravelTypeText(stringResource(R.string.boat))
         }
     }
+}
+
+fun openTicketDetails(
+    context: Context,
+    ticketType: Int = DetailsActivity.UnknownType
+) {
+    val intent = Intent(context, DetailsActivity::class.java)
+        .putExtra(
+            DetailsActivity.TicketTypeKey,
+            ticketType
+        )
+    context.startActivity(intent)
 }
 
 @Composable

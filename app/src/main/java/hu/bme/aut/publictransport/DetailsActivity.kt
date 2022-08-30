@@ -1,22 +1,32 @@
 package hu.bme.aut.publictransport
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.DatePicker
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -31,34 +41,28 @@ import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import hu.bme.aut.publictransport.ui.theme.PublicTransportTheme
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-class DetailsActivity : ComponentActivity() {
+class DetailsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PublicTransportTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    DetailsScreen(
-                        ticketType = intent.getIntExtra(
-                            TicketTypeKey,
-                            UnknownType
-                        )
+                DetailsScreen(
+                    ticketType = intent.getIntExtra(
+                        TicketTypeKey,
+                        UnknownType
                     )
-                }
+                )
             }
         }
     }
 
     companion object {
-        const val TicketTypeKey = "TicketTypeKey"
+        const val TicketTypeKey = "KEY_TICKET_TYPE"
 
         const val UnknownType = 0
         const val BikeType = 1
@@ -111,33 +115,6 @@ fun DetailsScreen(
             )
         }
         val context = LocalContext.current
-        // Not using Material 2 Designed Date Range Dialog fragment
-//        Text(
-//            text = stringResource(R.string.start_date),
-//            style = MaterialTheme.typography.labelLarge
-//        )
-//        var startDate by remember { mutableStateOf(LocalDate.now()) }
-//        DatePickerButton(
-//            context = context,
-//            date = startDate,
-//            onDateChangedListener = { _: DatePicker, year, month, day ->
-//                startDate = LocalDate.of(year, month, day)
-//            },
-//            text = startDate.toString()
-//        )
-//        Text(
-//            text = stringResource(R.string.end_date),
-//            style = MaterialTheme.typography.labelLarge
-//        )
-//        var endDate by remember { mutableStateOf(LocalDate.now()) }
-//        DatePickerButton(
-//            context = context,
-//            date = endDate,
-//            onDateChangedListener = { _: DatePicker, year, month, day ->
-//                endDate = LocalDate.of(year, month, day)
-//            },
-//            text = endDate.toString()
-//        )
         // Using Material 2 Designed Date Range Dialog fragment
         var startInstant by remember { mutableStateOf(Instant.now()) }
         var endInstant by remember {
@@ -201,7 +178,11 @@ fun DetailsScreen(
             }
             val price = basePrice * priceMultiplier
             Text(
-                text = price.toString(),
+                text = (price * endInstant
+                    .minusSeconds(startInstant.epochSecond)
+                    .epochSecond
+                    .seconds
+                    .inWholeDays).toString(),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall
@@ -224,48 +205,16 @@ fun DetailsScreen(
     }
 }
 
-/**
- * Date picker button opens a DatePickerDialog
- * with a given date and calls onDateChangedListener
- * when the selected date is changed.
- *
- * @param context
- * @param text
- * @param date
- * @param onDateChangedListener
- * @receiver
- */
-@Composable
-fun DatePickerButton(
-    context: Context = LocalContext.current,
-    text: String = "Pick a date",
-    date: LocalDate = LocalDate.now(),
-    onDateChangedListener: (DatePicker, Int, Int, Int) -> Unit =
-        { _: DatePicker, _: Int, _: Int, _: Int -> }
-) {
-    val datePickerDialog = DatePickerDialog(
-        context,
-        onDateChangedListener,
-        date.year, date.monthValue, date.dayOfMonth
-    )
-
-    Button(onClick = {
-        datePickerDialog.show()
-    }) {
-        Text(text = text)
-    }
-}
-
 @Composable
 fun DateRangePickerButton(
     context: Context = LocalContext.current,
     text: String = "Pick a date",
     startInstant: Instant = Instant.now(),
-    endInstant: Instant = startInstant.plusMillis(1.days.toLong(DurationUnit.MILLISECONDS)),
+    endInstant: Instant = startInstant.plusMillis(1.days.inWholeMilliseconds),
     onPositiveButtonListener: (Pair<Long, Long>) -> Unit =
         { _: Pair<Long, Long> -> }
 ) {
-    endInstant.coerceAtLeast(startInstant.plusMillis(1.days.toLong(DurationUnit.MILLISECONDS)))
+    endInstant.coerceAtLeast(startInstant.plusMillis(1.days.inWholeMilliseconds))
     val constraints = CalendarConstraints.Builder()
         .setValidator(DateValidatorPointForward.now())
         .build()
@@ -280,14 +229,14 @@ fun DateRangePickerButton(
         .setCalendarConstraints(constraints)
         .build()
     datePickerDialog.addOnPositiveButtonClickListener(onPositiveButtonListener)
-
     Button(
         onClick = {
             datePickerDialog.show(
                 (context as AppCompatActivity).supportFragmentManager,
                 datePickerDialog.toString()
             )
-        }) {
+        }
+    ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = CenterVertically
