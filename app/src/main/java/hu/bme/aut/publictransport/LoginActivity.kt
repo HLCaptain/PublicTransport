@@ -52,8 +52,10 @@ fun LoginScreen() {
         )
 
         val context = LocalContext.current
+
         var email by remember { mutableStateOf("") }
         var emailLabel by remember { mutableStateOf(context.getString(R.string.email_label)) }
+        var wasEmailValidated by remember { mutableStateOf(false) }
         TextField(
             value = email,
             onValueChange = {
@@ -64,11 +66,14 @@ fun LoginScreen() {
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email
-            )
+            ),
+            singleLine = true,
+            isError = email.isBlank() && wasEmailValidated
         )
 
         var password by remember { mutableStateOf("") }
         var passwordLabel by remember { mutableStateOf(context.getString(R.string.password_label)) }
+        var wasPasswordValidated by remember { mutableStateOf(false) }
         TextField(
             value = password,
             onValueChange = {
@@ -79,11 +84,15 @@ fun LoginScreen() {
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password
-            )
+            ),
+            singleLine = true,
+            isError = password.isBlank() && wasPasswordValidated
         )
 
         Button(
             onClick = {
+                wasEmailValidated = true
+                wasPasswordValidated = true
                 val emailEmpty = email.isEmpty()
                 if (emailEmpty) {
                     emailLabel = context.getString(R.string.please_enter_your_email_address)
