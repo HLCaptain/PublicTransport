@@ -235,11 +235,11 @@ fun LoginScreen() {
         )
 
         val context = LocalContext.current
-        
+
         var email by remember { mutableStateOf("") }
         var emailLabel by remember { mutableStateOf(context.getString(R.string.email_label)) }
         var wasEmailValidated by remember { mutableStateOf(false) }
-        val isEmailValid = !(email.isBlank() && wasEmailValidated)
+        val isEmailWrong = email.isBlank() && wasEmailValidated
         TextField(
             value = email,
             onValueChange = {
@@ -253,7 +253,7 @@ fun LoginScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(emailLabel)
-                    if (isEmailValid) {
+                    if (!isEmailWrong) {
                         Icon(
                             imageVector = Icons.Filled.Email,
                             contentDescription = stringResource(R.string.email_icon),
@@ -268,13 +268,13 @@ fun LoginScreen() {
             ),
             singleLine = true,
             // Show error state, when statement is true
-            isError = !isEmailValid
+            isError = isEmailWrong
         )
 
         var password by remember { mutableStateOf("") }
         var passwordLabel by remember { mutableStateOf(context.getString(R.string.password_label)) }
         var wasPasswordValidated by remember { mutableStateOf(false) }
-        val isPasswordValid = !(password.isBlank() && wasPasswordValidated)
+        val isPasswordWrong = password.isBlank() && wasPasswordValidated
         TextField(
             value = password,
             onValueChange = {
@@ -287,7 +287,7 @@ fun LoginScreen() {
                 keyboardType = KeyboardType.Password
             ),
             singleLine = true,
-            isError = !isPasswordValid
+            isError = isPasswordWrong
         )
 
         Button(
