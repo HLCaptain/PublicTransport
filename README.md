@@ -513,6 +513,252 @@ Ennek a módja is megvan Kotlin-nál, nagyon okosan bele lehet égetni "referenc
 osztályokra a kommentekbe `[...]` használatával. Persze a Java-like módon is lehet kommentezni.
 Ez a fajta mód ***[KDoc]***-ot képes generálni, ami a `Javadoc`-ra hajaz erősen.
 
+### Details
+
+Ennél a fejezetnél rendesen bele megyünk a ***RÉSZLETEK***be (kihagyhatatlan pun intended 😂).
+Több, advanced Kotlin feature-t is bemutatok röviden, ami lehetőve tette, hogy működjön boilerplate
+nélkül a kód.
+
+Egyébként ez az egyetlen [Activity], amely [AppCompatActivity]-ből származik le, ez elengedhetetlen
+része annak, hogy a [DateRangePicker] helyesen meg tudjon jelenni. Jelenleg ez az egyetlen módja
+annak, hogy egy [DateRangePicker] szerű komponenst meg lehessen jeleníteni.
+
+<p align="center">
+<img alt="DetailsActivity" src="assets/DetailsActivity.png" width="40%"/>
+<img alt="DetailsActivityDateRangePicker" src="assets/DetailsActivityDateRangePicker.png" width="40%"/>
+</p>
+
+`DetailsScreen` és a [DateRangePicker] képernyője. Nincs más dolgotok, csak be kell illeszteni az
+alábbi kódot a `DetailsActivity` alá és el is kezdem magyarázni az újdonságokat.
+
+```kotlin
+@Preview(showBackground = true)
+@Composable
+fun DetailsScreen(
+    ticketType: Int = DetailsActivity.UnknownType,
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize()
+            .scrollable(
+                state = scrollState,
+                orientation = Orientation.Vertical
+            ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // We save a lot of effort writing "DetailsActivity" when using the apply function
+        DetailsActivity.apply {
+            val ticketTypeText = when (ticketType) {
+                BusType -> stringResource(R.string.bus_ticket)
+                BikeType -> stringResource(R.string.bike_ticket)
+                BoatType -> stringResource(R.string.boat_ticket)
+                TrainType -> stringResource(R.string.train_ticket)
+                else -> stringResource(R.string.unknown_ticket_type)
+            }
+            Text(
+                text = ticketTypeText,
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+        val context = LocalContext.current
+        // Using Material 2 Designed Date Range Dialog fragment
+        var startInstant by remember { mutableStateOf(Instant.now()) }
+        var endInstant by remember {
+            mutableStateOf(
+                // Really cool way to convert Ints into whatever you like.
+                // This x.days tells that you want x to be counted as days.
+                // Then you convert x days into whatever duration you like.
+                Instant.now().plusMillis(1.days.inWholeMilliseconds)
+            )
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.select_date_range),
+                style = MaterialTheme.typography.labelLarge
+            )
+            val startDate = startInstant.atZone(ZoneId.systemDefault()).toLocalDate()
+            val endDate = endInstant.atZone(ZoneId.systemDefault()).toLocalDate()
+            Text(
+                text = "$startDate - $endDate",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        DateRangePickerButton(
+            context = context,
+            initialStartInstant = startInstant,
+            initialEndInstant = endInstant,
+            onSaveDateRangeListener = {
+                startInstant = Instant.ofEpochMilli(it.first)
+                endInstant = Instant.ofEpochMilli(it.second)
+            }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = Icons.Default.DateRange.name
+                )
+                Text(text = stringResource(R.string.pick_a_date))
+            }
+        }
+        Text(
+            text = stringResource(R.string.price_category),
+            style = MaterialTheme.typography.labelLarge
+        )
+        var selected by remember { mutableStateOf(DetailsActivity.FullPriceType) }
+        DetailsActivity.apply {
+            DetailsRadioGroup(
+                options = hashMapOf(
+                    // The "to" extension function makes intuitive to make pairs!
+                    FullPriceType to stringResource(R.string.full_price),
+                    SeniorType to stringResource(R.string.senior),
+                    StudentType to stringResource(R.string.student),
+                ),
+                selected = selected,
+                onOptionSelectedChange = { selected = it },
+            )
+
+            val basePrice = when (ticketType) {
+                BusType -> BusPrice
+                BikeType -> BikePrice
+                TrainType -> TrainPrice
+                BoatType -> BoatPrice
+                else -> maxOf(BusPrice, BikePrice, TrainPrice, BoatPrice)
+            }
+            val priceMultiplier = when (selected) {
+                FullPriceType -> FullPriceMultiplier
+                SeniorType -> SeniorMultiplier
+                StudentType -> StudentMultiplier
+                else -> FullPriceMultiplier
+            }
+            // Base price * discount * duration from start to end date (in days)
+            val price = basePrice * priceMultiplier * endInstant
+                .minusSeconds(startInstant.epochSecond)
+                .epochSecond
+                .seconds
+                .inWholeDays
+            Text(
+                text = price.toString(),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall
+            )
+        }
+        Button(
+            onClick = {
+                val startDate = startInstant.atZone(ZoneId.systemDefault()).toLocalDate()
+                val endDate = endInstant.atZone(ZoneId.systemDefault()).toLocalDate()
+                val dateString = "$startDate - $endDate"
+                val intent = Intent(context, PassActivity::class.java)
+                    .putExtra(PassActivity.TravelTypeKey, ticketType)
+                    .putExtra(PassActivity.DateKey, dateString)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.align(CenterHorizontally)
+        ) {
+            Text(text = stringResource(R.string.purchase_pass))
+        }
+    }
+}
+
+@Composable
+fun DateRangePickerButton(
+    context: Context = LocalContext.current,
+    initialStartInstant: Instant = Instant.now(),
+    initialEndInstant: Instant = initialStartInstant.plusMillis(1.days.inWholeMilliseconds),
+    onSaveDateRangeListener: (Pair<Long, Long>) -> Unit =
+        { _: Pair<Long, Long> -> },
+    content: @Composable RowScope.() -> Unit
+) {
+    initialEndInstant.coerceAtLeast(initialStartInstant.plusMillis(1.days.inWholeMilliseconds))
+    val constraints = CalendarConstraints.Builder()
+        .setValidator(DateValidatorPointForward.now())
+        .build()
+    val datePickerDialog = MaterialDatePicker.Builder.dateRangePicker()
+        .setTitleText(stringResource(R.string.start_date_end_date))
+        .setSelection(
+            Pair(
+                initialStartInstant.toEpochMilli(),
+                initialEndInstant.toEpochMilli()
+            )
+        )
+        .setCalendarConstraints(constraints)
+        .build()
+    datePickerDialog.addOnPositiveButtonClickListener(onSaveDateRangeListener)
+    Button(
+        onClick = {
+            datePickerDialog.show(
+                // That is why we set DetailsActivity to be an AppCompatActivity
+                // instead of a ComponentActivity.
+                // Now, it can provide a supportFragmentManager!
+                (context as AppCompatActivity).supportFragmentManager,
+                datePickerDialog.toString()
+            )
+        },
+        content = content
+    )
+}
+
+/**
+ * Creates an RadioGroup from given [options]. [options] contain an option and a String
+ * to display the option with. [selected] can be null, as no option is selected yet.
+ * [onOptionSelectedChange] is the observer lambda of any change in option selection.
+ */
+@Composable
+inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadioGroup(
+    modifier: Modifier = Modifier,
+    options: HashMap<Option, String>,
+    selected: NullableOption,
+    crossinline onOptionSelectedChange: (Option) -> Unit = {},
+) {
+    DetailsRadioGroup(
+        modifier = modifier,
+        options = options.keys.toList(),
+        selected = selected,
+        onOptionSelectedChange = onOptionSelectedChange,
+        optionToRadioButtonText = { options[it] ?: it.toString() }
+    )
+}
+
+@Composable
+inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadioGroup(
+    modifier: Modifier = Modifier,
+    options: List<Option>,
+    selected: NullableOption,
+    crossinline onOptionSelectedChange: (Option) -> Unit = {},
+    crossinline optionToRadioButtonText: (Option) -> String = { it.toString() },
+) {
+    Column {
+        // This is not a LazyColumn, but a less performant alternative!
+        // Though it can be easier to work with.
+        options.forEach { option ->
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = (option == selected),
+                        onClick = { onOptionSelectedChange(option) }
+                    ),
+                verticalAlignment = CenterVertically,
+            ) {
+                RadioButton(
+                    selected = (option == selected),
+                    onClick = { onOptionSelectedChange(option) },
+                )
+                Text(text = optionToRadioButtonText(option))
+            }
+        }
+    }
+}
+```
+
 [ComponentActivity]: https://developer.android.com/reference/androidx/activity/ComponentActivity
 
 [Jetpack Compose]: https://developer.android.com/jetpack/compose

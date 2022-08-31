@@ -35,4 +35,5 @@
     <string name="please_enter_your_credentials">Please enter your credentials!</string>
     <string name="login">Login</string>
     <string name="email_icon">Email icon</string>
+    <string name="pick_a_date">Pick a date</string>
 </resources>

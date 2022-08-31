@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -44,7 +45,6 @@ import java.time.Instant
 import java.time.ZoneId
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 class DetailsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +101,7 @@ fun DetailsScreen(
             ),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // We save a lot of effort writing "DetailsActivity" when using the apply function
         DetailsActivity.apply {
             val ticketTypeText = when (ticketType) {
                 BusType -> stringResource(R.string.bus_ticket)
@@ -119,7 +120,10 @@ fun DetailsScreen(
         var startInstant by remember { mutableStateOf(Instant.now()) }
         var endInstant by remember {
             mutableStateOf(
-                Instant.now().plusMillis(1.days.toLong(DurationUnit.MILLISECONDS))
+                // Really cool way to convert Ints into whatever you like.
+                // This x.days tells that you want x to be counted as days.
+                // Then you convert x days into whatever duration you like.
+                Instant.now().plusMillis(1.days.inWholeMilliseconds)
             )
         }
         Row(
@@ -139,14 +143,24 @@ fun DetailsScreen(
         }
         DateRangePickerButton(
             context = context,
-            startInstant = startInstant,
-            endInstant = endInstant,
-            onPositiveButtonListener = {
+            initialStartInstant = startInstant,
+            initialEndInstant = endInstant,
+            onSaveDateRangeListener = {
                 startInstant = Instant.ofEpochMilli(it.first)
                 endInstant = Instant.ofEpochMilli(it.second)
             }
-        )
-
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = Icons.Default.DateRange.name
+                )
+                Text(text = stringResource(R.string.pick_a_date))
+            }
+        }
         Text(
             text = stringResource(R.string.price_category),
             style = MaterialTheme.typography.labelLarge
@@ -155,9 +169,10 @@ fun DetailsScreen(
         DetailsActivity.apply {
             DetailsRadioGroup(
                 options = hashMapOf(
+                    // The "to" extension function makes intuitive to make pairs!
                     FullPriceType to stringResource(R.string.full_price),
                     SeniorType to stringResource(R.string.senior),
-                    StudentType to stringResource(R.string.student)
+                    StudentType to stringResource(R.string.student),
                 ),
                 selected = selected,
                 onOptionSelectedChange = { selected = it },
@@ -176,13 +191,14 @@ fun DetailsScreen(
                 StudentType -> StudentMultiplier
                 else -> FullPriceMultiplier
             }
-            val price = basePrice * priceMultiplier
+            // Base price * discount * duration from start to end date (in days)
+            val price = basePrice * priceMultiplier * endInstant
+                .minusSeconds(startInstant.epochSecond)
+                .epochSecond
+                .seconds
+                .inWholeDays
             Text(
-                text = (price * endInstant
-                    .minusSeconds(startInstant.epochSecond)
-                    .epochSecond
-                    .seconds
-                    .inWholeDays).toString(),
+                text = price.toString(),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall
@@ -207,14 +223,15 @@ fun DetailsScreen(
 
 @Composable
 fun DateRangePickerButton(
+    modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
-    text: String = "Pick a date",
-    startInstant: Instant = Instant.now(),
-    endInstant: Instant = startInstant.plusMillis(1.days.inWholeMilliseconds),
-    onPositiveButtonListener: (Pair<Long, Long>) -> Unit =
+    initialStartInstant: Instant = Instant.now(),
+    initialEndInstant: Instant = initialStartInstant.plusMillis(1.days.inWholeMilliseconds),
+    onSaveDateRangeListener: (Pair<Long, Long>) -> Unit =
         { _: Pair<Long, Long> -> },
+    content: @Composable RowScope.() -> Unit
 ) {
-    endInstant.coerceAtLeast(startInstant.plusMillis(1.days.inWholeMilliseconds))
+    initialEndInstant.coerceAtLeast(initialStartInstant.plusMillis(1.days.inWholeMilliseconds))
     val constraints = CalendarConstraints.Builder()
         .setValidator(DateValidatorPointForward.now())
         .build()
@@ -222,41 +239,42 @@ fun DateRangePickerButton(
         .setTitleText(stringResource(R.string.start_date_end_date))
         .setSelection(
             Pair(
-                startInstant.toEpochMilli(),
-                endInstant.toEpochMilli()
+                initialStartInstant.toEpochMilli(),
+                initialEndInstant.toEpochMilli()
             )
         )
         .setCalendarConstraints(constraints)
         .build()
-    datePickerDialog.addOnPositiveButtonClickListener(onPositiveButtonListener)
+    datePickerDialog.addOnPositiveButtonClickListener(onSaveDateRangeListener)
     Button(
+        modifier = modifier,
         onClick = {
             datePickerDialog.show(
+                // That is why we set DetailsActivity to be an AppCompatActivity
+                // instead of a ComponentActivity.
+                // Now, it can provide a supportFragmentManager!
                 (context as AppCompatActivity).supportFragmentManager,
                 datePickerDialog.toString()
             )
-        }
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = Icons.Default.DateRange.name
-            )
-            Text(text = text)
-        }
-    }
+        },
+        content = content
+    )
 }
 
+/**
+ * Creates an RadioGroup from given [options]. [options] contain an option and a String
+ * to display the option with. [selected] can be null, as no option is selected yet.
+ * [onOptionSelectedChange] is the observer lambda of any change in option selection.
+ */
 @Composable
 inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadioGroup(
+    modifier: Modifier = Modifier,
     options: HashMap<Option, String>,
     selected: NullableOption,
     crossinline onOptionSelectedChange: (Option) -> Unit = {},
 ) {
     DetailsRadioGroup(
+        modifier = modifier,
         options = options.keys.toList(),
         selected = selected,
         onOptionSelectedChange = onOptionSelectedChange,
@@ -266,15 +284,18 @@ inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadio
 
 @Composable
 inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadioGroup(
+    modifier: Modifier = Modifier,
     options: List<Option>,
     selected: NullableOption,
     crossinline onOptionSelectedChange: (Option) -> Unit = {},
     crossinline optionToRadioButtonText: (Option) -> String = { it.toString() },
 ) {
     Column {
+        // This is not a LazyColumn, but a less performant alternative!
+        // Though it can be easier to work with.
         options.forEach { option ->
             Row(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .selectable(
                         selected = (option == selected),
