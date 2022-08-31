@@ -215,6 +215,10 @@ enélkül a Theme nem lehetne olyan amilyen és ez azt vonzza magával, hogy nem
 
 #### LoginScreen
 
+Az alábbi kódot `CTRL+C` `CTRL+V` be lehet illeszteni a `LoginActivity.kt` fájlba a `LoginActivity`
+osztály alá. A kommenteket érdemes feldolgozni, hogy mi-mit csinál, bár a snippet után is van
+néhány dolog, amit elmagyarázok a kóddal kapcsolatban.
+
 ```kotlin
 // Annotation needed to use TextField, Button, etc.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -359,6 +363,156 @@ utazást képviselnek.
 <img alt="ListActivity" src="assets/ListActivity.png" width="40%"/>
 </p>
 
+#### Kotlin Coding Conventions (Biblia)
+
+Van néhány konvenció, néhány szabály, amit komolyan kell venni, hogy szép, konzisztens kódot tudjon
+írni az ember. Ebben segít a [Kotlin Coding Conventions]! A dokumentációban lévő elveket segít
+betartatni az Android Studio, a beállításoknál az `Editor` ➡ `Coding Style` ➡ `Kotlin` ➡
+`Load/Save` tabon, lehet látni, hogy a [Kotlin Coding Conventions]-ból meríti az alapokat a built-in
+formatter. Ha már itt vagyunk ajánlom, hogy kapcsoljátok be az `Other` tabon a `Use trailing comma`
+✅ opciót. A [Kotlin Coding Conventions] dokumentációban le van írva, miért jó.
+
+Fontos dolog, amit innen kiemelnék, az, hogy a laborok általában nem szokták mindig követni ezeket,
+(még Ekler se 😲) ami persze teljesen érthető az idő szűkében, viszont ez az ami nekem a különbséget
+jelenti egy okés, jó ember és egy ***Android Isten Sigma Male/Female*** között. Ha figyeltek ezekre
+a konvenciókra, akkor más is sokkal jobban fogja értékelni a munkátokat, mások munkáját is jobban
+fogjátok tudni megítélni.
+
+#### TypeOfTravelScreen és más Composable-ök
+
+Alább is van egy code snippet, amit a `ListActivity.kt`-ba, a `TravelType` data class alá
+kellene beilleszteni.
+
+```kotlin
+@Preview(showBackground = true)
+@Composable
+fun TypeOfTravelScreen() {
+    // A Column would be fine as well, but we try
+    // to reduce boilerplate code as much as possible.
+    // That is why we made a list containing the travel types.
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        userScrollEnabled = false
+    ) {
+        items(ListActivity.travelTypes) {
+            TravelTypeButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // fillMaxSize() does not work here, because of the LazyColumn
+                    // not supporting it properly. It instead supports this:
+                    .fillParentMaxHeight(1f / ListActivity.travelTypes.size),
+                ticketType = it.ticketType,
+                imageResourceId = it.imageResourceId,
+                nameResourceId = it.nameResourceId
+            )
+        }
+    }
+}
+
+// Example comment using Kotlin features. It is best not to overuse comments.
+// Try writing code which documents itself and only comment when it is necessary.
+/**
+ * Creates a button with the background image of [imageResourceId],
+ * and a label in the middle with the string of [nameResourceId].
+ * Pressing the button will start [DetailsActivity] with the given
+ * [context]. The [ticketType] is put into the [Intent] beforehand.
+ */
+@Composable
+fun TravelTypeButton(
+    modifier: Modifier = Modifier,
+    context: Context = LocalContext.current,
+    ticketType: Int = DetailsActivity.UnknownType,
+    imageResourceId: Int = R.drawable.splash_image,
+    nameResourceId: Int = R.string.unknown_ticket_type,
+) {
+    IconButton(
+        onClick = {
+            openTicketDetails(
+                context = context,
+                ticketType = ticketType
+            )
+        },
+        modifier = modifier
+    ) {
+        TravelTypeImage(
+            painterResourceId = imageResourceId,
+            contentDescription = stringResource(nameResourceId),
+        )
+        TravelTypeText(text = stringResource(nameResourceId))
+    }
+}
+
+// A more Java-like comment with KDoc!
+// More formal, than above, but don't overuse it!
+/**
+ * Starts [DetailsActivity] with the given [context]
+ * and the [ticketType] is put into the [Intent] beforehand.
+ *
+ * @param context starts [DetailsActivity].
+ * @param ticketType will be put into the [Intent]
+ * which starts [DetailsActivity].
+ */
+fun openTicketDetails(
+    context: Context,
+    ticketType: Int = DetailsActivity.UnknownType,
+) {
+    val intent = Intent(context, DetailsActivity::class.java)
+        .putExtra(
+            DetailsActivity.TicketTypeKey,
+            ticketType
+        )
+    context.startActivity(intent)
+}
+
+@Composable
+fun TravelTypeImage(
+    modifier: Modifier = Modifier,
+    painterResourceId: Int = R.drawable.splash_image,
+    contentDescription: String = stringResource(R.string.unknown_ticket_type),
+) {
+    Image(
+        painter = painterResource(painterResourceId),
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop,
+        modifier = modifier.fillMaxSize()
+    )
+}
+
+@Composable
+fun TravelTypeText(
+    modifier: Modifier = Modifier,
+    text: String = stringResource(R.string.unknown_ticket_type),
+) {
+    Text(
+        text = text,
+        color = Color.White,
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.headlineLarge,
+        modifier = modifier
+    )
+}
+```
+#### Boilerplate megelőzése
+
+Itt több különálló Composable-re szedtem a UI elemeket, hogy kevesebb
+legyen a boilerplate (felesleges) kód. Boilerplate kód (duplikált, kötelezően rossz kód) több
+programozási alapelvet megsért, köztük sokszor az *Open-Closed Principle-t* (OCP),
+a *Single-Responsibility Principle-t* (SRP) és *Single Choice Principle-t* (SCP) valamint elkerüli
+a jó szokásokat, mint a *Don't Repeat Yourself* (DRY) a temérdek más Principle-ökön kívül, amit
+felsorolhatnék. Helyette ajánlom az ***[Objektumorientált Szoftvertervezés]*** tárgyat. (Ajánlom,
+hogyha van egy olyan barátotok aki OO-n van most, akkor tőle kérjetek el a diákat,
+[vik.wiki]-n eléggé outdated az anyag amit találtam, azt nem ajánlom. Dr. Simon Balázs
+angol diái menők.)
+
+#### Kommentelés
+
+A kódkommentelésről is elrejtettem néhány jó tippet, a legjobb, ha önmagát dokumentálja a kód,
+azonban egy-két komment sokat segíthet egy bonyolultabb, komplexebb mechanizmus megértésében.
+Ennek a módja is megvan Kotlin-nál, nagyon okosan bele lehet égetni "referenciákat" adott
+osztályokra a kommentekbe `[...]` használatával. Persze a Java-like módon is lehet kommentezni.
+Ez a fajta mód ***[KDoc]***-ot képes generálni, ami a `Javadoc`-ra hajaz erősen.
+
 [ComponentActivity]: https://developer.android.com/reference/androidx/activity/ComponentActivity
 
 [Jetpack Compose]: https://developer.android.com/jetpack/compose
@@ -386,3 +540,11 @@ utazást képviselnek.
 [Androidx Compose Material]: https://developer.android.com/jetpack/androidx/releases/compose-material
 
 [State and Jetpack Compose]: https://developer.android.com/jetpack/compose/state
+
+[Kotlin Coding Conventions]: https://kotlinlang.org/docs/coding-conventions.html
+
+[Objektumorientált Szoftvertervezés]: https://edu.vik.bme.hu/course/view.php?id=5217
+
+[vik.wiki]: https://vik.wiki
+
+[KDoc]: https://kotlinlang.org/docs/kotlin-doc.html

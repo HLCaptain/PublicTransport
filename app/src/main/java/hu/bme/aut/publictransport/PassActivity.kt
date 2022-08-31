@@ -57,7 +57,7 @@ class PassActivity : ComponentActivity() {
 @Composable
 fun PassScreen(
     passType: String = "Type of pass",
-    passDate: String = "Start date - End date"
+    passDate: String = "Start date - End date",
 ) {
     val scrollState = rememberScrollState()
     Column(

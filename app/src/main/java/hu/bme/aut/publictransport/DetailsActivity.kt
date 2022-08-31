@@ -88,7 +88,7 @@ class DetailsActivity : AppCompatActivity() {
 @Preview(showBackground = true)
 @Composable
 fun DetailsScreen(
-    ticketType: Int = DetailsActivity.UnknownType
+    ticketType: Int = DetailsActivity.UnknownType,
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -212,7 +212,7 @@ fun DateRangePickerButton(
     startInstant: Instant = Instant.now(),
     endInstant: Instant = startInstant.plusMillis(1.days.inWholeMilliseconds),
     onPositiveButtonListener: (Pair<Long, Long>) -> Unit =
-        { _: Pair<Long, Long> -> }
+        { _: Pair<Long, Long> -> },
 ) {
     endInstant.coerceAtLeast(startInstant.plusMillis(1.days.inWholeMilliseconds))
     val constraints = CalendarConstraints.Builder()
@@ -269,7 +269,7 @@ inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadio
     options: List<Option>,
     selected: NullableOption,
     crossinline onOptionSelectedChange: (Option) -> Unit = {},
-    crossinline optionToRadioButtonText: (Option) -> String = { it.toString() }
+    crossinline optionToRadioButtonText: (Option) -> String = { it.toString() },
 ) {
     Column {
         options.forEach { option ->

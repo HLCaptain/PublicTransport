@@ -35,7 +35,7 @@ class ListActivity : ComponentActivity() {
         }
     }
 
-    // Companion object is at the bottom, as told in
+    // Companion object is at the bottom, as told in (the bible)
     // https://kotlinlang.org/docs/coding-conventions.html
     companion object {
         val travelTypes = listOf(
@@ -66,13 +66,15 @@ class ListActivity : ComponentActivity() {
 data class TravelType(
     val ticketType: Int,
     val imageResourceId: Int,
-    val nameResourceId: Int
+    val nameResourceId: Int,
 )
 
 @Preview(showBackground = true)
 @Composable
 fun TypeOfTravelScreen() {
-    val context = LocalContext.current
+    // A Column would be fine as well, but we try
+    // to reduce boilerplate code as much as possible.
+    // That is why we made a list containing the travel types.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -80,10 +82,11 @@ fun TypeOfTravelScreen() {
     ) {
         items(ListActivity.travelTypes) {
             TravelTypeButton(
-                modifier =  Modifier
+                modifier = Modifier
                     .fillMaxWidth()
+                    // fillMaxSize() does not work here, because of the LazyColumn
+                    // not supporting it properly. It instead supports this:
                     .fillParentMaxHeight(1f / ListActivity.travelTypes.size),
-                context = context,
                 ticketType = it.ticketType,
                 imageResourceId = it.imageResourceId,
                 nameResourceId = it.nameResourceId
@@ -92,13 +95,21 @@ fun TypeOfTravelScreen() {
     }
 }
 
+// Example comment using Kotlin features. It is best not to overuse comments.
+// Try writing code which documents itself and only comment when it is necessary.
+/**
+ * Creates a button with the background image of [imageResourceId],
+ * and a label in the middle with the string of [nameResourceId].
+ * Pressing the button will start [DetailsActivity] with the given
+ * [context]. The [ticketType] is put into the [Intent] beforehand.
+ */
 @Composable
 fun TravelTypeButton(
     modifier: Modifier = Modifier,
-    context: Context,
-    ticketType: Int,
-    imageResourceId: Int,
-    nameResourceId: Int
+    context: Context = LocalContext.current,
+    ticketType: Int = DetailsActivity.UnknownType,
+    imageResourceId: Int = R.drawable.splash_image,
+    nameResourceId: Int = R.string.unknown_ticket_type,
 ) {
     IconButton(
         onClick = {
@@ -113,13 +124,23 @@ fun TravelTypeButton(
             painterResourceId = imageResourceId,
             contentDescription = stringResource(nameResourceId),
         )
-        TravelTypeText(stringResource(nameResourceId))
+        TravelTypeText(text = stringResource(nameResourceId))
     }
 }
 
+// A more Java-like comment with KDoc!
+// More formal, than above, but don't overuse it!
+/**
+ * Starts [DetailsActivity] with the given [context]
+ * and the [ticketType] is put into the [Intent] beforehand.
+ *
+ * @param context starts [DetailsActivity].
+ * @param ticketType will be put into the [Intent]
+ * which starts [DetailsActivity].
+ */
 fun openTicketDetails(
     context: Context,
-    ticketType: Int = DetailsActivity.UnknownType
+    ticketType: Int = DetailsActivity.UnknownType,
 ) {
     val intent = Intent(context, DetailsActivity::class.java)
         .putExtra(
@@ -131,23 +152,28 @@ fun openTicketDetails(
 
 @Composable
 fun TravelTypeImage(
-    painterResourceId: Int,
-    contentDescription: String,
+    modifier: Modifier = Modifier,
+    painterResourceId: Int = R.drawable.splash_image,
+    contentDescription: String = stringResource(R.string.unknown_ticket_type),
 ) {
     Image(
         painter = painterResource(painterResourceId),
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     )
 }
 
 @Composable
-fun TravelTypeText(text: String) {
+fun TravelTypeText(
+    modifier: Modifier = Modifier,
+    text: String = stringResource(R.string.unknown_ticket_type),
+) {
     Text(
         text = text,
         color = Color.White,
         textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.headlineLarge
+        style = MaterialTheme.typography.headlineLarge,
+        modifier = modifier
     )
 }
