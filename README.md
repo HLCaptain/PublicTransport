@@ -670,11 +670,11 @@ fun DetailsScreen(
 
 @Composable
 fun DateRangePickerButton(
+    modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     initialStartInstant: Instant = Instant.now(),
     initialEndInstant: Instant = initialStartInstant.plusMillis(1.days.inWholeMilliseconds),
-    onSaveDateRangeListener: (Pair<Long, Long>) -> Unit =
-        { _: Pair<Long, Long> -> },
+    onSaveDateRangeListener: (Pair<Long, Long>) -> Unit = {},
     content: @Composable RowScope.() -> Unit
 ) {
     initialEndInstant.coerceAtLeast(initialStartInstant.plusMillis(1.days.inWholeMilliseconds))
@@ -693,6 +693,7 @@ fun DateRangePickerButton(
         .build()
     datePickerDialog.addOnPositiveButtonClickListener(onSaveDateRangeListener)
     Button(
+        modifier = modifier,
         onClick = {
             datePickerDialog.show(
                 // That is why we set DetailsActivity to be an AppCompatActivity
