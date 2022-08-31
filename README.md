@@ -616,7 +616,7 @@ fun DetailsScreen(
         DetailsActivity.apply {
             DetailsRadioGroup(
                 options = hashMapOf(
-                    // The "to" extension function makes intuitive to make pairs!
+                    // The "to" extension function makes it intuitive to make pairs!
                     FullPriceType to stringResource(R.string.full_price),
                     SeniorType to stringResource(R.string.senior),
                     StudentType to stringResource(R.string.student),
