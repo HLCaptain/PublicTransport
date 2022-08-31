@@ -33,4 +33,6 @@
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
     <string name="please_enter_your_credentials">Please enter your credentials!</string>
+    <string name="login">Login</string>
+    <string name="email_icon">Email icon</string>
 </resources>

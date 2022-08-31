@@ -123,8 +123,10 @@ verzióját kézileg be kell állítani, ideális, ha a `compose_version` <= `co
 Aztán van egy desugaring könyvtár, ami az új, modern dolgokat backportolja egy régebbi platformra,
 hogy több készüléket tudjunk támogatni. Pl. van az [Instant] osztály, ami `API 26`-ban jött ki,
 viszont ezzel a lib-bel lemehetünk legalább `API 23`-ig (ennyi a `minSdk` a projektnél).
-
-Egyébként
+Ha kikommentezzük a `coreLibraryDesugaringEnabled true` sort, akkor ordítani fog az Android Studio,
+hogy nem csekkolod azt, hogy `API 26` vagy annál modernebb készüléket használsz e, mikor
+[Instant]-ot használsz a `DetailsActivity`-ben. A feladat végén kikommentezheted, hogy lásd
+(gradle sync-elni kell, aztán látod).
 
 #### The more you know
 
@@ -163,7 +165,8 @@ a napoktól függően. A napokat egy modern [DateRangePicker] által választhat
 
 Vannak [Jetpack Compose]-nál elemek, amik leegyszerűsítik más, XML-es elemek használatát. Egyik
 ilyen a `Column`. A `Column` a `LinearLayout`-ot hivatott leváltani, egész jól ráadásul. Mindent
-meg lehet vele csinálni, amit az XML couterpart-ja tud, és kevés kóddal!
+meg lehet vele csinálni, amit az XML couterpart-ja tud, és kevés kóddal! [Compose Layouts]
+oldal egész jól összeszedi a dolgokat.
 
 Másik fontos dolog Compose-nál, az a `Modifier`. `Modifier`-ek lényeges adatot hordozhatnak arról,
 hogyan is viselkedjen a UI elem.
@@ -181,11 +184,179 @@ Egyébként erről jut eszembe, van
 dolgoknak a Compose alternatíváját. Innen könnyebb lehet átírni a labort manuálisan, de inkább
 használjátok a snippeteket, amiket adok nektek, ígérem, bőkezű leszek!
 
+<!---
+A lurkóknak, akik raw-ba nézik üzenem, hogy egy képet nem így szokás beilleszteni Markdown-ba,
+viszont a center és resize miatt kénytelen voltam így megoldani. A helyes syntax egyébként
+![img_description](img_path). img_path lehet url, relative vagy absolute path is (utóbbit nem
+mindegyik parser támogatja).
+--->
 <p align="center">
-<img alt="LoginActivity" src="assets/LoginActivity.png" width="50%"/>
+<img alt="LoginActivity" src="assets/LoginActivity.png" width="40%"/>
+<img alt="LoginScreenLayout" src="assets/LoginScreenLayout.png" width="40%"/>
 </p>
 
-A *`LoginScreen`* így nézne ki.
+A *`LoginScreen`* és layout-ja így nézne ki. Minden egyes Composable-re, mint a `Text`, `TextField`
+és `Button` rá lehet keresni Google-ön, hogy hogyan működik pontosan, hogyan kell és érdemes őket
+használni. Olyan sok mindent testre lehet szabni ezeknél az elemeknél, hogy el mehetne vele egy
+egész labor, nem érnénk a végére ennek a három elemnek. Szerencsére open-source és [részletesen
+dokumentált][Compose Layouts] minden, amit használtam, így könnyen utána lehet járni a dolgoknak.
+
+#### Figyelem! ⚠
+
+***Figyelni kell arra, hogy Material Design 3 elveket követtem a labor során, ez annyi különbséget
+jelent, hogy pl. a `Button` az a [`androidx.compose.material3`][Androidx Compose Material 3]
+könyvtárból származik, nem pedig a [`androidx.compose.material`][Androidx Compose Material]-ból.
+Ha nem nézne ki úgy a UI, ahogy a képen, akkor változtasd meg a könyvtárat!***
+
+A [`androidx.compose.material`][Androidx Compose Material] könyvtár is szükséges eleme a projektnek,
+enélkül a Theme nem lehetne olyan amilyen és ez azt vonzza magával, hogy nem lehetne megnyitni a
+[`DateRangePicker`][DateRangePicker]-t.
+
+#### LoginScreen
+
+```kotlin
+// Annotation needed to use TextField, Button, etc.
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun LoginScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        // There is 8.dp space between items in the Column
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.please_enter_your_credentials),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        val context = LocalContext.current
+        
+        var email by remember { mutableStateOf("") }
+        var emailLabel by remember { mutableStateOf(context.getString(R.string.email_label)) }
+        var wasEmailValidated by remember { mutableStateOf(false) }
+        val isEmailValid = !(email.isBlank() && wasEmailValidated)
+        TextField(
+            value = email,
+            onValueChange = {
+                email = it
+                emailLabel = context.getString(R.string.email_label)
+            },
+            // label accepts a Composable. Can be anything! The wonders, Compose is capable of 😊.
+            label = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(emailLabel)
+                    if (isEmailValid) {
+                        Icon(
+                            imageVector = Icons.Filled.Email,
+                            contentDescription = stringResource(R.string.email_icon),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email
+            ),
+            singleLine = true,
+            // Show error state, when statement is true
+            isError = !isEmailValid
+        )
+
+        var password by remember { mutableStateOf("") }
+        var passwordLabel by remember { mutableStateOf(context.getString(R.string.password_label)) }
+        var wasPasswordValidated by remember { mutableStateOf(false) }
+        val isPasswordValid = !(password.isBlank() && wasPasswordValidated)
+        TextField(
+            value = password,
+            onValueChange = {
+                password = it
+                passwordLabel = context.getString(R.string.password_label)
+            },
+            label = { Text(passwordLabel) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password
+            ),
+            singleLine = true,
+            isError = !isPasswordValid
+        )
+
+        Button(
+            onClick = {
+                // Validating text fields
+                wasEmailValidated = true
+                wasPasswordValidated = true
+                val emailEmpty = email.isBlank()
+                if (emailEmpty) {
+                    emailLabel = context.getString(R.string.please_enter_your_email_address)
+                }
+                val passwordEmpty = password.isBlank()
+                if (passwordEmpty) {
+                    passwordLabel = context.getString(R.string.please_enter_your_password)
+                }
+                if (!emailEmpty && !passwordEmpty) {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            ListActivity::class.java
+                        )
+                    )
+                }
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(text = stringResource(R.string.login))
+        }
+    }
+}
+```
+
+#### *`remember`* és *`mutableStateOf`*
+
+Compose-ban nagyon egyszerű a state handling. Minden változó, aminek a változását reflektálni
+szeretnénk, becsomagoljuk egy ilyen `remember { mutableStateOf(/* Initial state */) }` blokkba,
+majd ha módosítjuk ezt a változót amit a `by`-jal delegálunk, vagy `=` jellel assignolunk egy
+változóhoz, akkor a **rekompozíció során nem veszik el az adat**! Csak akkor veszik el az adat, ha
+az Activity-je a lifecycle végéhez ért és leáll, mert ez a state nem perzisztens. Egyébként a
+[State and Jetpack Compose] cikk jól el tudja magyarázni a dolgokat.
+
+#### `context`
+
+A `context` egy picit máshogy működik Compose-ban, mint ahogy fragmenseknél. Ha kell a `context`,
+akkor vagy megkapod azt, mint paraméter, vagy lekéred `LocalContext.current` hívással. Ez általában
+ahhoz kellhet, ha valami lokalizált String-et akarsz megkapni szövekből, ha éppen nem tudod
+meghívni a *`stringResource()`*-t.
+
+#### State change
+
+Ha a state változik, akkor a UI rekompózál, vagyis a friss state-tel újra lerenderelődik.
+A `wasEmailValidated = true` műveletnél, mivel a `wasEmailValidated` egy state variable volt,
+el fog indulni a UI rekompozíciója. Mondhatni mindig, amikor írunk az egyik `TextField`-be, elindul
+egy rekompozíció, hogy reflektálja a változásokat.
+
+#### Validáció
+
+Megnézzük, hogy a `TextField` üres e (vagy tele van szóközökkel), ha igen, akkor jelezzük a hibát,
+ha nem, akkor pedig megyünk is a ListActivity-ben a TypeOfTravelScreen-re.
+
+### List
+
+A `ListActivity`-nél az lesz a különbség, hogy több Composable-re fogjuk bontani a lista elemeit.
+Mivel a listaelemek csak a háttérképükben, szövegükben és abban különböznek, hogy milyen típusú
+utazást képviselnek.
+
+<p align="center">
+<img alt="ListActivity" src="assets/ListActivity.png" width="40%"/>
+</p>
 
 [ComponentActivity]: https://developer.android.com/reference/androidx/activity/ComponentActivity
 
@@ -206,3 +377,11 @@ A *`LoginScreen`* így nézne ki.
 [SonarLint]: https://www.sonarsource.com/products/sonarlint/
 
 [What is the euivalent of X in Jetpack Compose]: https://www.jetpackcompose.app/What-is-the-equivalent-of-X-in-Jetpack-Compose
+
+[Compose Layouts]: https://developer.android.com/jetpack/compose/layouts
+
+[Androidx Compose Material 3]: https://developer.android.com/jetpack/androidx/releases/compose-material3
+
+[Androidx Compose Material]: https://developer.android.com/jetpack/androidx/releases/compose-material
+
+[State and Jetpack Compose]: https://developer.android.com/jetpack/compose/state
