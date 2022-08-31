@@ -201,12 +201,13 @@ használni. Olyan sok mindent testre lehet szabni ezeknél az elemeknél, hogy e
 egész labor, nem érnénk a végére ennek a három elemnek. Szerencsére open-source és [részletesen
 dokumentált][Compose Layouts] minden, amit használtam, így könnyen utána lehet járni a dolgoknak.
 
-#### Figyelem! ⚠
+#### ⚠ Figyelem! ⚠
 
 ***Figyelni kell arra, hogy Material Design 3 elveket követtem a labor során, ez annyi különbséget
 jelent, hogy pl. a `Button` az a [`androidx.compose.material3`][Androidx Compose Material 3]
 könyvtárból származik, nem pedig a [`androidx.compose.material`][Androidx Compose Material]-ból.
-Ha nem nézne ki úgy a UI, ahogy a képen, akkor változtasd meg a könyvtárat!***
+Ha nem nézne ki úgy a UI, ahogy a képen, akkor figyelj arra, hogy a
+[`androidx.compose.material3`][Androidx Compose Material 3] könyvtárból importáld a `Button`-t!***
 
 A [`androidx.compose.material`][Androidx Compose Material] könyvtár is szükséges eleme a projektnek,
 enélkül a Theme nem lehetne olyan amilyen és ez azt vonzza magával, hogy nem lehetne megnyitni a
@@ -320,7 +321,7 @@ fun LoginScreen() {
 }
 ```
 
-#### *`remember`* és *`mutableStateOf`*
+#### *remember* és *mutableStateOf*
 
 Compose-ban nagyon egyszerű a state handling. Minden változó, aminek a változását reflektálni
 szeretnénk, becsomagoljuk egy ilyen `remember { mutableStateOf(/* Initial state */) }` blokkba,
@@ -329,7 +330,7 @@ változóhoz, akkor a **rekompozíció során nem veszik el az adat**! Csak akko
 az Activity-je a lifecycle végéhez ért és leáll, mert ez a state nem perzisztens. Egyébként a
 [State and Jetpack Compose] cikk jól el tudja magyarázni a dolgokat.
 
-#### `context`
+#### Context
 
 A `context` egy picit máshogy működik Compose-ban, mint ahogy fragmenseknél. Ha kell a `context`,
 akkor vagy megkapod azt, mint paraméter, vagy lekéred `LocalContext.current` hívással. Ez általában
