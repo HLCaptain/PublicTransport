@@ -493,6 +493,7 @@ fun TravelTypeText(
     )
 }
 ```
+
 #### Boilerplate megelőzése
 
 Itt több különálló Composable-re szedtem a UI elemeket, hogy kevesebb
@@ -675,7 +676,7 @@ fun DateRangePickerButton(
     initialStartInstant: Instant = Instant.now(),
     initialEndInstant: Instant = initialStartInstant.plusMillis(1.days.inWholeMilliseconds),
     onSaveDateRangeListener: (Pair<Long, Long>) -> Unit = {},
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     initialEndInstant.coerceAtLeast(initialStartInstant.plusMillis(1.days.inWholeMilliseconds))
     val constraints = CalendarConstraints.Builder()
@@ -760,6 +761,132 @@ inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadio
 }
 ```
 
+#### Template-ek jövője
+
+Amikor Programozás alapjai 2-ből megismertem a template-ket, Szebi csodás homlokára nyomtam egy
+cuppanós puszit, annyira ötültem neki (csak metafora 🙃). Szerencsére átélhettem Kotlinban ugyanezt
+az érzést az `inline`, `reified` és `crossinline` kulcsszavak megismerésénél. Konkrétan arra kell
+gondolni, hogy a függvény automatikusan fel tudja ismerni, milyen típusú változót kap és nem kell
+castolni esetleges callback-eket, ha valamilyen generikus observer/listener mintájú mechanizmust
+szerenténk lekódolni.
+
+A snippet alján vannak a `DetailsRadioGroup` ilyen template metódusok, ahol ***NEM KELL*** explicit
+leírni, hogy `DetailsRadioGroup<String>("...")`, ha épp azt szeretnénk, hogy `String` legyen az
+`Option` típus 😌. Boilerplate code: eliminálva.
+
+#### Interop XML-lel (vagy Fragment-tel vagy egyéb régebbi technológiával)
+
+Szerencsére nagyon egyszerű az interoperability [Jetpack Compose] és a régebbi technológiák között
+az [Interoperability APIs] segítségével. Lényegében nagyobb probléma nélkül lehet régi, Fragment és
+XML-es appba Compose alapú UI-t írni, valamint Compose-ba egy régi, még a Compose-ban nem jelenlévő
+elemet tenni. Utóbbi egyébként szerintem egy jó módszer arra, hogy komplex, de kész régi eszközöket
+fel lehessen használni Compose-ban, úgynevezet *Wrapping* segítségével. Konkrétan egy *Composable*
+function-be helyezünk egy [AndroidView]-t vagy [AndroidViewBinding]-ot használva.
+
+Ez a módszer lehetővé teszi a fejlesztőket, hogy régi appokat felújítsanak, valamint az új
+funkciókat már az újabb és jobb [Jetpack Compose]-ban írják.
+
+Őszintén szólva, megmondom nektek a tutit. Ekler beszélhet arról, hogy az XML és Compose hosszú
+távon képes megmaradni egymás mellett, meg hogy mindkettőnek megvan a helye a piacon, de én
+Google-nek jobban hiszek. Ne értsetek félre, ahogy említettem a feladat elején, szerintem is
+megvan még a helye az XML-nek és meg is lesz egy darabig, de ha a Google [ilyen videókat rak fel
+a Fragment-ről](https://youtu.be/OE-tDh3d1F4), ők is realizálják, hogy kötelező rossz és
+viccelődnek azzal, hogy még nem `deprecated` az egész, akkor van jogom azt hinni, hogy a [Jetpack
+Compose] mindenképpen le fogja váltani az XML-t és Fragment-eket.
+
+#### [DateRangePicker] részletesebben
+
+Papolok itt az [Interoperability APIs]-ról, de szerencsémre/szerencsétlenségemre volt egy probléma
+amit modern, [Jetpack Compose] eszközökkel nehezen tudtam megoldani. [DatePicker] létezik
+Compose-ban, azonban amellett, hogy régi a fejlesztői interfésze, csak Dialog formában elérhető, és
+[Material Design 2]-vel, nem [Material Design 3]-mal. Valamint csak 1 dátumot lehet vele
+kiválasztani, nem egy intervallumot. Szerencsére a [DateRangePicker]-rel már tudunk intervallumot
+választani, azonban a megjelenítése picit több munkát igényel, minthogy átadnánk neki egy
+`Context`-tet. Mivel nem csak egy `Dialog`-ról van szó, hanem egy teljes `Fragment`-ről (egy
+`FragmentDialog`-ról pontosabban), ezért szüksége van a `supportFragmentManager`-re. Ez a
+[ComponentActivity]-ben nincs meg, viszont az [AppCompatActivity]-ban már jelen van. Ezért kellett
+megváltoztatni a `DetailsActivity` ősét. Ez a változás azt is magával vonzotta, hogy a `Theme`-nek
+le kellett származnia egy `Theme.AppCompat` theme-ből. És onnan sem akármelyikből, hanem olyanból,
+aminek meg voltak adva adott attribútumai. Szerencsére a `Theme.Material3` megállta a helyét és
+rendeltetésszerűen működött tovább az applikáció.
+
+#### Navigálás előre!
+
+Mielőtt továbbmennék a `PassActivity`-hez, felhívnám a figyelmet, hogy a transzportáció típusát,
+valamint egy date intervallumot reprezentáló String-et adunk át az [Intent]ben.
+
+### Pass
+
+<p align="center">
+<img alt="PassActivity" src="assets/PassActivity.png" width="40%"/>
+</p>
+
+Végső soron elértünk a `PassActivity`-hez! Irreálisan hosszú ez a labor, szerencsére nem maradt sok
+a végére. Ezt a kódot kellene *`copypasta`*-zni `PassActivity` alá, `PassScreen`-t helyettesítve.
+
+```kotlin
+@Preview(showBackground = true)
+@Composable
+fun PassScreen(
+    modifier: Modifier = Modifier,
+    passType: String = stringResource(R.string.unknown_pass_type),
+    passDate: String = stringResource(R.string.start_date_end_date),
+) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = modifier
+            .padding(8.dp)
+            .fillMaxSize()
+            .scrollable(
+                state = scrollState,
+                orientation = Orientation.Vertical
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = passType,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Text(text = passDate)
+        Image(
+            painter = painterResource(id = R.drawable.qrcode),
+            contentDescription = stringResource(R.string.qr_code)
+        )
+    }
+}
+```
+
+#### [Intent]ből adat kinyerése, [Parcelable], [Parcelize]
+
+Röviden: hasznos. Hosszabban, szerintem manapság elég ritkán indítunk Activity-t egy appon belül
+navigáció szempontjából, így annál nem szokás használni. Viszont mind a [Navigation Component],
+[Compose Navigation] és a (szerintem ennek a jobb Compose alternatívája:) [Compose Destinations]
+között hasonlóan át kell adni egy egyszerűbb típusú objektumot, vagy [Parcelable]-t, hogy azt az
+úticél `Fragment` vagy `Composable` fel tudja dolgozni.
+
+Szerencsénkre létezik egy olyan menő plugin, amit úgy hívnak, hogy [Parcelize]. A plugin
+segítségével elérhetővé válik számunkra a `@Parcelize` annotáció, amit kábé bármely `data class`
+felé tudjuk biggyeszteni, hogy [Parcelable]-lé tudjuk alakítani könnyen. Konkrétan automatikusan
+legenerálja a [Parcelable] által kért metódusokat az adott osztályhoz.
+
+## Végszó ✨ 🚀 💫
+
+Az IMSC feladat dokumentálása közben próbáltam ügyelni arra, hogy 4 fájl-ra 4 kódot kelljen csak
+bemásolni, viszont maximalizálni szerettem volna a bónusz hasznos információkat, hogy az elszánt
+kolléga minél több tudást és jó szokást könyvelhessen el magának. Valamint szerettem volna csinálni
+egy cheat sheet-et azonkan akik [Jetpack Compose]-ban szeretnék a háziaikat írni 🥰.
+
+Tudom, nagyon hosszú ez így, viszont remélem, többször is előveszitek, nézegetitek a kódot,
+rálestek a hyperlinkekre, valamint ránéztek raw-ban a Markdown file-ra is. Ott is próbáltam ügyelni
+a tisztaságra 🧼 🧹 🧽.
+
+Egyébként jelenleg szakdolgozatomat írom a 2022-es őszi félévben, aminek része egy Android app,
+ha rá szeretnétek nézni, mit-hogyan csinálok a legjobb tudásom szerint, akkor clone-ozzátok is
+[Jay]t 🐦 🥰. Van benne DevOps, SAAS (Firebase). Én szeretném, ha minél több embernek egyedi házija
+legyen, GitHub-on temérdek sok open-source példa áll rendelkezésére az embernek, amiből ihletet
+meríthet.
+
 [ComponentActivity]: https://developer.android.com/reference/androidx/activity/ComponentActivity
 
 [Jetpack Compose]: https://developer.android.com/jetpack/compose
@@ -795,3 +922,27 @@ inline fun <reified Option : Any, reified NullableOption : Option?> DetailsRadio
 [vik.wiki]: https://vik.wiki
 
 [KDoc]: https://kotlinlang.org/docs/kotlin-doc.html
+
+[Interoperability APIs]: https://developer.android.com/jetpack/compose/interop/interop-apis
+
+[AndroidView]: https://developer.android.com/reference/kotlin/androidx/compose/ui/viewinterop/package-summary#AndroidView(kotlin.Function1,androidx.compose.ui.Modifier,kotlin.Function1)
+
+[AndroidViewBinding]: https://developer.android.com/reference/kotlin/androidx/compose/ui/viewinterop/package-summary#AndroidViewBinding(kotlin.Function3,androidx.compose.ui.Modifier,kotlin.Function1)
+
+[DatePicker]: https://material.io/components/date-pickers
+
+[Material Design 2]: https://material.io/
+
+[Material Design 3]: https://m3.material.io/
+
+[Compose Navigation]: https://developer.android.com/jetpack/compose/navigation
+
+[Navigation Component]: https://developer.android.com/guide/navigation
+
+[Compose Destinations]: https://composedestinations.rafaelcosta.xyz/
+
+[Parcelable]: https://developer.android.com/reference/android/os/Parcelable
+
+[Parcelize]: https://developer.android.com/kotlin/parcelize
+
+[Jay]: https://github.com/HLCaptain/jay-android/tree/feature-compose

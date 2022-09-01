@@ -228,7 +228,7 @@ fun DateRangePickerButton(
     initialStartInstant: Instant = Instant.now(),
     initialEndInstant: Instant = initialStartInstant.plusMillis(1.days.inWholeMilliseconds),
     onSaveDateRangeListener: (Pair<Long, Long>) -> Unit = {},
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     initialEndInstant.coerceAtLeast(initialStartInstant.plusMillis(1.days.inWholeMilliseconds))
     val constraints = CalendarConstraints.Builder()

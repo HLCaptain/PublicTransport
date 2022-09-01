@@ -28,10 +28,12 @@ class PassActivity : ComponentActivity() {
         setContent {
             PublicTransportTheme {
                 DetailsActivity.apply {
-                    val travelType = when (intent.getIntExtra(
-                        TravelTypeKey,
-                        UnknownType
-                    )) {
+                    val travelType = when (
+                        intent.getIntExtra(
+                            TravelTypeKey,
+                            UnknownType
+                        )
+                    ) {
                         BusType -> getString(R.string.bus_pass)
                         BikeType -> getString(R.string.bike_pass)
                         BoatType -> getString(R.string.boat_pass)
@@ -39,8 +41,8 @@ class PassActivity : ComponentActivity() {
                         else -> getString(R.string.unknown_pass_type)
                     }
                     PassScreen(
-                        travelType,
-                        intent.getStringExtra(DateKey) ?: ""
+                        passType = travelType,
+                        passDate = intent.getStringExtra(DateKey) ?: ""
                     )
                 }
             }
@@ -56,12 +58,13 @@ class PassActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun PassScreen(
-    passType: String = "Type of pass",
-    passDate: String = "Start date - End date",
+    modifier: Modifier = Modifier,
+    passType: String = stringResource(R.string.unknown_pass_type),
+    passDate: String = stringResource(R.string.start_date_end_date),
 ) {
     val scrollState = rememberScrollState()
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(8.dp)
             .fillMaxSize()
             .scrollable(
