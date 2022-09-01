@@ -122,7 +122,7 @@ verzióját kézileg be kell állítani, ideális, ha a `compose_version` <= `co
 
 Aztán van egy desugaring könyvtár, ami az új, modern dolgokat backportolja egy régebbi platformra,
 hogy több készüléket tudjunk támogatni. Pl. van az [Instant] osztály, ami `API 26`-ban jött ki,
-viszont ezzel a lib-bel lemehetünk legalább `API 23`-ig (ennyi a `minSdk` a projektnél).
+viszont ezzel a lib-bel lemehetünk legalább `API 21`-ig (ennyi a `minSdk` a projektnél).
 Ha kikommentezzük a `coreLibraryDesugaringEnabled true` sort, akkor ordítani fog az Android Studio,
 hogy nem csekkolod azt, hogy `API 26` vagy annál modernebb készüléket használsz e, mikor
 [Instant]-ot használsz a `DetailsActivity`-ben. A feladat végén kikommentezheted, hogy lásd
