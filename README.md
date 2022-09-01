@@ -161,7 +161,7 @@ választani, milyen hosszú ideig és ki számára állítsunk ki egy béretet. 
 a napoktól függően. A napokat egy modern [DateRangePicker] által választhatjuk ki.
 4. `PassActivity` megjeleníti az átvett adatok alapján a végső bérletet.
 
-### Login
+### Login 📲 ⏳ ⌛ ✅
 
 Vannak [Jetpack Compose]-nál elemek, amik leegyszerűsítik más, XML-es elemek használatát. Egyik
 ilyen a `Column`. A `Column` a `LinearLayout`-ot hivatott leváltani, egész jól ráadásul. Mindent
@@ -514,7 +514,7 @@ Ennek a módja is megvan Kotlin-nál, nagyon okosan bele lehet égetni "referenc
 osztályokra a kommentekbe `[...]` használatával. Persze a Java-like módon is lehet kommentezni.
 Ez a fajta mód ***[KDoc]***-ot képes generálni, ami a `Javadoc`-ra hajaz erősen.
 
-### Details
+### Details 📃
 
 Ennél a fejezetnél rendesen bele megyünk a ***RÉSZLETEK***be (kihagyhatatlan pun intended 😂).
 Több, advanced Kotlin feature-t is bemutatok röviden, ami lehetőve tette, hogy működjön boilerplate
@@ -810,12 +810,12 @@ le kellett származnia egy `Theme.AppCompat` theme-ből. És onnan sem akármely
 aminek meg voltak adva adott attribútumai. Szerencsére a `Theme.Material3` megállta a helyét és
 rendeltetésszerűen működött tovább az applikáció.
 
-#### Navigálás előre!
+#### Navigálás előre! 🗺
 
 Mielőtt továbbmennék a `PassActivity`-hez, felhívnám a figyelmet, hogy a transzportáció típusát,
-valamint egy date intervallumot reprezentáló String-et adunk át az [Intent]ben.
+valamint egy date intervallumot reprezentáló String-et adunk át az Intentben.
 
-### Pass
+### Pass 🛂
 
 <p align="center">
 <img alt="PassActivity" src="assets/PassActivity.png" width="40%"/>
