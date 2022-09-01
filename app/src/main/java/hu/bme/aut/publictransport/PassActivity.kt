@@ -62,26 +62,5 @@ fun PassScreen(
     passType: String = stringResource(R.string.unknown_pass_type),
     passDate: String = stringResource(R.string.start_date_end_date),
 ) {
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier
-            .padding(8.dp)
-            .fillMaxSize()
-            .scrollable(
-                state = scrollState,
-                orientation = Orientation.Vertical
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = passType,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Text(text = passDate)
-        Image(
-            painter = painterResource(id = R.drawable.qrcode),
-            contentDescription = stringResource(R.string.qr_code)
-        )
-    }
+    // TODO: Paste code here from README.md
 }
