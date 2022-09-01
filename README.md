@@ -857,7 +857,7 @@ fun PassScreen(
 }
 ```
 
-#### [Intent]ből adat kinyerése, [Parcelable], [Parcelize]
+#### Intentből adat kinyerése, [Parcelable], [Parcelize]
 
 Röviden: hasznos. Hosszabban, szerintem manapság elég ritkán indítunk Activity-t egy appon belül
 navigáció szempontjából, így annál nem szokás használni. Viszont mind a [Navigation Component],
