@@ -215,9 +215,9 @@ enélkül a Theme nem lehetne olyan amilyen és ez azt vonzza magával, hogy nem
 
 #### LoginScreen
 
-Az alábbi kódot `CTRL+C` `CTRL+V` be lehet illeszteni a `LoginActivity.kt` fájlba a `LoginActivity`
-osztály alá. A kommenteket érdemes feldolgozni, hogy mi-mit csinál, bár a snippet után is van
-néhány dolog, amit elmagyarázok a kóddal kapcsolatban.
+Az alábbi kódot <kbd>CTRL</kbd>+<kbd>C</kbd> <kbd>CTRL</kbd>+<kbd>V</kbd>-vel lehet illeszteni a
+`LoginActivity.kt` fájlba a `LoginActivity`osztály alá. A kommenteket érdemes feldolgozni, hogy
+mi-mit csinál, bár a snippet után is van néhány dolog, amit elmagyarázok a kóddal kapcsolatban.
 
 ```kotlin
 // Annotation needed to use TextField, Button, etc.
@@ -325,14 +325,15 @@ fun LoginScreen() {
 }
 ```
 
-#### *remember* és *mutableStateOf*
+#### *remember* és *mutableStateOf*, [State and Jetpack Compose] és [Lifecycle of composables]
 
 Compose-ban nagyon egyszerű a state handling. Minden változó, aminek a változását reflektálni
 szeretnénk, becsomagoljuk egy ilyen `remember { mutableStateOf(/* Initial state */) }` blokkba,
-majd ha módosítjuk ezt a változót amit a `by`-jal delegálunk, vagy `=` jellel assignolunk egy
-változóhoz, akkor a **rekompozíció során nem veszik el az adat**! Csak akkor veszik el az adat, ha
-az Activity-je a lifecycle végéhez ért és leáll, mert ez a state nem perzisztens. Egyébként a
-[State and Jetpack Compose] cikk jól el tudja magyarázni a dolgokat.
+majd ha módosítjuk a `by`-jal, vagy `=` jellel assignolt változót, akkor a **rekompozíció során nem
+veszik el az adat**! Csak akkor veszik el az adat, ha maga a Composable a lifecycle végéhez ért és
+leáll, mert ez a state nem perzisztens. Egyébként a [State and Jetpack Compose] cikk jól el tudja
+magyarázni a dolgokat. A lifecycle-ről Composable-ök esetében [Lifecycle of composables] cikkben
+tudtok olvasni.
 
 #### Context
 
@@ -351,7 +352,7 @@ egy rekompozíció, hogy reflektálja a változásokat.
 #### Validáció
 
 Megnézzük, hogy a `TextField` üres e (vagy tele van szóközökkel), ha igen, akkor jelezzük a hibát,
-ha nem, akkor pedig megyünk is a ListActivity-ben a TypeOfTravelScreen-re.
+ha nem, akkor pedig megyünk is a `ListActivity-ben` a `TypeOfTravelScreen`-re.
 
 ### List
 
@@ -914,6 +915,8 @@ meríthet.
 [Androidx Compose Material]: https://developer.android.com/jetpack/androidx/releases/compose-material
 
 [State and Jetpack Compose]: https://developer.android.com/jetpack/compose/state
+
+[Lifecycle of composables]: https://developer.android.com/jetpack/compose/lifecycle
 
 [Kotlin Coding Conventions]: https://kotlinlang.org/docs/coding-conventions.html
 
