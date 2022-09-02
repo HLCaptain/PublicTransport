@@ -63,9 +63,10 @@ a dátumokat válasszuk ki a rendelni kívánt jegyhez.
 ### Manifest és Theme
 
 Mindegyik Activity fel van véve az `AndroidManifest.xml` fájlba. Fontos az, hogy az Activity-khez
-rendelt Theme az egy olyan theme legyen, ami leszármazottja egy AppCompat Theme-nek (ilyen a
-Material3 Theme is). Ez szintén ahhoz kell, hogy a `DetailsActivity`-ben meg tudjuk jeleníteni a
-[DateRangePicker]-t. Egyébként **nem sikerülne betölteni** a [DateRangePicker]-t, crashelne az app.
+rendelt `res/values/themes.xml`-ben lévő `Theme.PublicTransport` az egy olyan téma legyen, ami
+leszármazottja egy `Theme.AppCompat`-nek (ilyen a `Theme.Material3` is). Ez szintén ahhoz kell,
+hogy a `DetailsActivity`-ben meg tudjuk jeleníteni a [DateRangePicker]-t.
+Egyébként **nem sikerülne betölteni** a [DateRangePicker]-t, crashelne az app.
 
 ### Resources
 
@@ -76,7 +77,7 @@ Windows-on ***ALT+ENTER***, egyébként jobb klikk a raw String-re és rá kell 
 az `Extract string resource` menüre. Ekkor feljön egy dialog, hogy milyen kulccsal lehessen elérni
 azt és automatikusan hozzáadja a szöveged a `strings.xml` fájlhoz, valamint refactorlálja a kódod a
 legjobb tudása alapján az Android Studio (általában wrappeli így:
-`stringResource(R.strings.my_string))`). Én úgy szoktam, hogy beírom raw string-ként, majd ezzel az
+`stringResource(R.strings.my_string)`). Én úgy szoktam, hogy beírom raw string-ként, majd ezzel az
 módszerrel be is rakom `strings.xml`-be. Key-nél érdemes követni a `snake_case`-t.
 
 ### Project `build.gradle`
