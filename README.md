@@ -10,8 +10,8 @@ többnyire elavult technológiákat használnak, amik egy kötelező rossz az ip
 technológiák támogatása szükséges, azonban mindig érdemes a jövőre figyelni, ott bővíteni a
 jelenlegi tudását az embernek.
 
-A dokumentáció segítségével egy olyan alkalmazást hozol létre, amit követendő példának ítélek meg. A
-megoldás során szó fog esni ajánlott eszközökről, amik jelentősen megkönnyítették számomra a
+A dokumentáció segítségével egy olyan alkalmazást hozol létre, amit követendő példának ítélek meg.
+A megoldás során szó fog esni ajánlott eszközökről, amik jelentősen megkönnyítették számomra a
 fejlesztést, valamint nagyon hasznosnak ítélem meg őket és használatuk segíthet majd a házi feladat
 megírásában is.
 
@@ -25,7 +25,7 @@ rögtön nem működik valami.
 
 ## Setup ⚙
 
-A kezdő projekt a `PublicTransport.zip` fájlba van becsomagolva (ha bevan valahova csomagolva).
+A kezdő projekt a `PublicTransport.zip` fájlba van becsomagolva (ha be van valahova csomagolva).
 Egy projekt setup-olása és felkonfigurálása fontos, de nem a világot szeretném megváltani, úgyhogy
 annak az elmagyarázása majd egy másik napra marad. Mindenesetre megjegyzek néhány dolgot. *Át lehet
 ugrani idő hiányában a Setup részt, de a sigma grind nem állhat meg, érdekes dolgokról van szó.*
@@ -877,7 +877,7 @@ legenerálja a [Parcelable] által kért metódusokat az adott osztályhoz.
 Az IMSC feladat dokumentálása közben próbáltam ügyelni arra, hogy 4 fájl-ra 4 kódot kelljen csak
 bemásolni, viszont maximalizálni szerettem volna a bónusz hasznos információkat, hogy az elszánt
 kolléga minél több tudást és jó szokást könyvelhessen el magának. Valamint szerettem volna csinálni
-egy cheat sheet-et azonkan akik [Jetpack Compose]-ban szeretnék a háziaikat írni 🥰.
+egy cheat sheet-et azoknak akik [Jetpack Compose]-ban szeretnék a háziaikat írni 🥰.
 
 Tudom, nagyon hosszú ez így, viszont remélem, többször is előveszitek, nézegetitek a kódot,
 rálestek a hyperlinkekre, valamint ránéztek raw-ban a Markdown file-ra is. Ott is próbáltam ügyelni
